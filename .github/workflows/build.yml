@@ -34,6 +34,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Compile TypeScript
+        run: pnpm compile
+
       - name: Build application (Linux)
         if: matrix.os == 'ubuntu-latest'
         env:
@@ -81,6 +84,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Compile TypeScript
+        run: pnpm compile
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
