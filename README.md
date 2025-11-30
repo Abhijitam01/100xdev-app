@@ -8,7 +8,7 @@ An open source Electron application that wraps `https://projects.100xdevs.com/` 
 
 ## Download
 
-Download the latest release for your platform from [GitHub Releases](https://github.com/100xdevs/web-wrapper/releases):
+Download the latest release for your platform from [GitHub Releases](https://github.com/Abhijitam01/100xdev-app/releases):
 
 - **Windows**: `.exe` installer or portable `.zip`
 - **macOS**: `.dmg` installer or `.zip` archive
@@ -143,8 +143,8 @@ pnpm run release
 
 1. **Clone the repository**:
 ```bash
-git clone https://github.com/100xdevs/web-wrapper.git
-cd web-wrapper
+git clone https://github.com/Abhijitam01/100xdev-app.git
+cd 100xdev-app
 ```
 
 2. **Install dependencies**:
