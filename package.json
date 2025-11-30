@@ -1,0 +1,130 @@
+{
+  "name": "100xdevs-web-wrapper",
+  "version": "1.0.0",
+  "description": "Open source Electron app wrapping 100xdevs Projects and App URLs - Free and available for Windows, Linux, and macOS",
+  "main": "main.js",
+  "author": "100xdevs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/100xdevs/web-wrapper.git"
+  },
+  "homepage": "https://github.com/100xdevs/web-wrapper#readme",
+  "scripts": {
+    "start": "electron --no-sandbox .",
+    "start:dev": "electron --inspect --no-sandbox .",
+    "build": "pnpm exec electron-builder",
+    "build:linux": "pnpm exec electron-builder --linux",
+    "build:win": "pnpm exec electron-builder --win",
+    "build:mac": "pnpm exec electron-builder --mac",
+    "build:all": "pnpm exec electron-builder --linux --win --mac",
+    "dist:linux": "pnpm exec electron-builder --linux --publish never",
+    "dist:win": "pnpm exec electron-builder --win --publish never",
+    "dist:mac": "pnpm exec electron-builder --mac --publish never",
+    "dist:all": "pnpm exec electron-builder --linux --win --mac --publish never",
+    "release": "pnpm exec electron-builder --linux --win --mac --publish always"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "electron-updater": "^6.1.7"
+  },
+  "build": {
+    "appId": "com.100xdevs.webwrapper",
+    "productName": "100xdevs Web Wrapper",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "linux": {
+      "target": [
+        "deb",
+        "AppImage"
+      ],
+      "category": "Utility",
+      "icon": "assets/icon-100xdev.png",
+      "desktop": {
+        "Name": "100xdevs Web Wrapper",
+        "Comment": "Wrapper for 100xdevs Projects and App",
+        "Categories": "Utility;"
+      }
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon-100xdev.ico",
+      "publisherName": "100xdevs"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.utilities",
+      "icon": "assets/icon-100xdev.icns",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "deb": {
+      "depends": []
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "100xdevs",
+      "repo": "web-wrapper",
+      "releaseType": "release"
+    }
+  }
+}
