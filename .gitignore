@@ -10,6 +10,8 @@ coverage/
 dist/
 build/
 out/
+*.js
+!node_modules/**/*.js
 
 # Misc
 .DS_Store
@@ -43,4 +45,9 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# TypeScript compiled output (keep source .ts files)
+main.js
+preload.js
+src/*.js
 
