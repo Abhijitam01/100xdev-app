@@ -1,6 +1,7 @@
 {
   "name": "100xdevs-web-wrapper",
   "version": "1.0.0",
+  "private": false,
   "description": "Open source Electron app wrapping 100xdevs Projects and App URLs - Free and available for Windows, Linux, and macOS",
   "main": "dist/main.js",
   "author": "Abhijitam01",
