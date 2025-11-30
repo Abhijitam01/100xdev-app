@@ -91,9 +91,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/dist-ubuntu-latest/**
-            artifacts/dist-windows-latest/**
-            artifacts/dist-macos-latest/**
+            artifacts/dist-ubuntu-latest/**/*
+            artifacts/dist-windows-latest/**/*
+            artifacts/dist-macos-latest/**/*
           draft: false
           prerelease: false
         env:

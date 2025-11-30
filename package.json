@@ -7,9 +7,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/100xdevs/web-wrapper.git"
+    "url": "https://github.com/Abhijitam01/100xdev-app.git"
   },
-  "homepage": "https://github.com/100xdevs/web-wrapper#readme",
+  "homepage": "https://github.com/Abhijitam01/100xdev-app#readme",
   "scripts": {
     "start": "electron --no-sandbox .",
     "start:dev": "electron --inspect --no-sandbox .",
@@ -122,8 +122,8 @@
     },
     "publish": {
       "provider": "github",
-      "owner": "100xdevs",
-      "repo": "web-wrapper",
+      "owner": "Abhijitam01",
+      "repo": "100xdev-app",
       "releaseType": "release"
     }
   }

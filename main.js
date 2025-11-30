@@ -349,8 +349,8 @@ app.whenReady().then(() => {
     // Configure auto-updater
     autoUpdater.setFeedURL({
       provider: 'github',
-      owner: '100xdevs',
-      repo: 'web-wrapper'
+      owner: 'Abhijitam01',
+      repo: '100xdev-app'
     });
 
     // Check for updates on startup (non-blocking)
