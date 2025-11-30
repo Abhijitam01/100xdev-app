@@ -2,6 +2,9 @@ const { app, BrowserWindow, ipcMain, shell, protocol, session, Tray, Menu, nativ
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
 
+// App version and metadata
+const APP_VERSION = require('./package.json').version;
+
 // Trusted origins for security
 const TRUSTED_ORIGINS = [
   'https://projects.100xdevs.com',
