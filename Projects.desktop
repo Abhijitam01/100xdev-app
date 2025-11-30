@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Projects
+Comment=100xdevs Projects
+Exec=/home/abhijitam/Desktop/100xdev/launch-app.sh
+Icon=/home/abhijitam/Desktop/100xdev/assets/icon.png
+Path=/home/abhijitam/Desktop/100xdev
+Terminal=false
+Categories=Utility;
+StartupNotify=true
+NoDisplay=false

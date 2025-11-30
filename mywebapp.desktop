@@ -1,0 +1,20 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=100xdevs Web Wrapper
+Comment=Wrapper for 100xdevs Projects and App
+Exec=100xdevs-web-wrapper
+Icon=icon
+Terminal=false
+Categories=Utility;Network;WebBrowser;
+MimeType=x-scheme-handler/myapp;
+StartupNotify=true
+Actions=
+
+[Desktop Action Projects]
+Name=Open Projects
+Exec=100xdevs-web-wrapper --tab=projects
+
+[Desktop Action App]
+Name=Open App
+Exec=100xdevs-web-wrapper --tab=app

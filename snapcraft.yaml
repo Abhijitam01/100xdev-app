@@ -1,0 +1,76 @@
+name: 100xdevs-web-wrapper
+version: '1.0.0'
+summary: Production-ready Electron app wrapping 100xdevs Projects and App URLs
+description: |
+  A secure Electron application that provides a native wrapper for
+  https://projects.100xdevs.com/ and https://app.100xdevs.com/home
+  with tabbed interface, navigation controls, theme toggle, and system tray support.
+
+grade: stable
+confinement: strict
+
+base: core22
+
+parts:
+  electron-app:
+    plugin: nil
+    source: .
+    build-packages:
+      - nodejs
+      - npm
+    prime:
+      - -usr/share/doc
+      - -usr/share/man
+      - -usr/share/locale
+      - -usr/share/info
+      - -usr/share/gtk-doc
+      - -usr/share/gir-1.0
+      - -usr/share/gir-2.0
+      - -usr/lib/*/girepository-*
+      - -usr/share/metainfo
+      - -usr/share/appdata
+    build: |
+      npm install
+      npm run build:linux
+
+apps:
+  100xdevs-web-wrapper:
+    command: electron
+    plugs:
+      - network
+      - network-bind
+      - desktop
+      - desktop-legacy
+      - opengl
+      - wayland
+      - x11
+      - unity7
+      - browser-support
+    desktop: mywebapp.desktop
+    environment:
+      DISABLE_WAYLAND: "1"
+
+slots:
+  default-protocol-handler:
+    interface: content
+    content: default
+
+plugs:
+  network:
+    interface: network
+  network-bind:
+    interface: network-bind
+  desktop:
+    interface: desktop
+  desktop-legacy:
+    interface: desktop-legacy
+  opengl:
+    interface: opengl
+  wayland:
+    interface: wayland
+  x11:
+    interface: x11
+  unity7:
+    interface: unity7
+  browser-support:
+    interface: browser-support
