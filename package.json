@@ -13,8 +13,8 @@
   "homepage": "https://github.com/Abhijitam01/100xdev-app#readme",
   "scripts": {
     "compile": "tsc",
-    "start": "pnpm compile && electron --no-sandbox dist/main.js",
-    "start:dev": "pnpm compile && electron --inspect --no-sandbox dist/main.js",
+    "start": "tsc && electron --no-sandbox dist/main.js",
+    "start:dev": "tsc && electron --inspect --no-sandbox dist/main.js",
     "build": "pnpm compile && pnpm exec electron-builder",
     "build:linux": "pnpm compile && pnpm exec electron-builder --linux",
     "build:win": "pnpm compile && pnpm exec electron-builder --win",

@@ -164,7 +164,9 @@ function setupNavigationHandlers(): void {
 function setupOAuthDetection(): void {
   const ses = session.fromPartition('persist:100xdevs');
 
-  ses.webRequest.onBeforeRedirect((details) => {
+  ses.webRequest.onBeforeRedirect({
+    urls: ['<all_urls>']
+  }, (details) => {
     const url = details.redirectURL || details.url;
     const oauthParams = ['code=', 'access_token=', 'id_token=', 'state=', 'oauth_token=', 'oauth_callback='];
     const isOAuthRedirect = oauthParams.some(param => url.includes(param));
@@ -172,8 +174,6 @@ function setupOAuthDetection(): void {
     if (isOAuthRedirect) {
       console.log('[OAuth Detection] Allowing OAuth redirect:', url);
     }
-  }, {
-    urls: ['<all_urls>']
   });
 }
 

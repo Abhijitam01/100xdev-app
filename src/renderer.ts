@@ -1,3 +1,8 @@
+type WebviewNewWindowEvent = Electron.Event & {
+  url: string;
+  newGuest?: Electron.WebContents;
+};
+
 let webview: Electron.WebviewTag | null = null;
 
 interface ElectronAPI {
@@ -43,9 +48,10 @@ function initializeWebview(): void {
     console.log('Navigating to:', event.url);
   });
 
-  webview.addEventListener('new-window', (event: Electron.NewWindowEvent) => {
+  webview.addEventListener('new-window', (event: Event) => {
     event.preventDefault();
-    const url = event.url;
+    const newWindowEvent = event as unknown as WebviewNewWindowEvent;
+    const url = newWindowEvent.url;
     
     if (url.includes('100xdevs.com') || 
         url.includes('oauth') || 
@@ -69,3 +75,4 @@ function initializeWebview(): void {
   });
 }
 
+export {};
