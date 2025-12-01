@@ -1,4 +1,4 @@
-// Simplified renderer - just the webview, no extra controls
+// Simplified renderer - webview plus minimal tab controls
 let webview = null;
 
 // Initialize on DOM load
@@ -8,10 +8,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initializeWebview() {
   webview = document.getElementById('main-webview');
-  
+  const projectsBtn = document.getElementById('tab-projects');
+  const appBtn = document.getElementById('tab-app');
+
   if (!webview) {
     console.error('Webview not found!');
     return;
+  }
+
+  const setActiveTab = (tab) => {
+    if (!webview) return;
+
+    if (projectsBtn && appBtn) {
+      projectsBtn.classList.toggle('active', tab === 'projects');
+      appBtn.classList.toggle('active', tab === 'app');
+    }
+
+    if (tab === 'projects') {
+      webview.src = 'https://projects.100xdevs.com/';
+    } else {
+      webview.src = 'https://app.100xdevs.com/home';
+    }
+  };
+
+  if (projectsBtn) {
+    projectsBtn.addEventListener('click', () => setActiveTab('projects'));
+  }
+
+  if (appBtn) {
+    appBtn.addEventListener('click', () => setActiveTab('app'));
   }
 
   // Webview event handlers
@@ -66,4 +91,11 @@ function initializeWebview() {
   webview.addEventListener('did-navigate-in-page', (event) => {
     console.log('In-page navigation to:', event.url);
   });
+
+  // React to tray / external navigation requests when available
+  if (window.electronAPI && typeof window.electronAPI.onNavigateTab === 'function') {
+    window.electronAPI.onNavigateTab((tab) => {
+      setActiveTab(tab);
+    });
+  }
 }

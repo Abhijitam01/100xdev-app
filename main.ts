@@ -3,7 +3,11 @@ import { autoUpdater } from 'electron-updater';
 import * as path from 'path';
 import * as fs from 'fs';
 
-const APP_VERSION = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf-8')).version;
+const packageJsonPath = fs.existsSync(path.join(__dirname, 'package.json'))
+  ? path.join(__dirname, 'package.json')
+  : path.join(__dirname, '..', 'package.json');
+
+const APP_VERSION = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8')).version;
 
 const TRUSTED_ORIGINS = [
   'https://projects.100xdevs.com',
@@ -47,7 +51,8 @@ function createWindow(): void {
     titleBarStyle: 'default'
   });
 
-  mainWindow.loadFile(path.join(__dirname, 'src', 'index.html'));
+  const indexHtmlPath = path.join(__dirname, '..', 'src', 'index.html');
+  mainWindow.loadFile(indexHtmlPath);
 
   mainWindow.once('ready-to-show', () => {
     if (mainWindow) {
@@ -128,33 +133,40 @@ function setupNavigationHandlers(): void {
     try {
       const url = new URL(details.url);
       const origin = `${url.protocol}//${url.host}`;
-      
-      const isTrusted = TRUSTED_ORIGINS.some(trusted => 
+
+      const isTrusted = TRUSTED_ORIGINS.some(trusted =>
         origin === trusted || origin.startsWith(trusted + '/')
       );
-      
+
       const isOAuthProvider = OAUTH_PROVIDERS.some(provider =>
         origin === provider || origin.startsWith(provider + '/')
       );
-      
+
+      const is100xDomain =
+        url.hostname.endsWith('100xdevs.com') ||
+        url.hostname === 'localhost';
+
       const hasOAuthParams = ['code=', 'access_token=', 'id_token=', 'state=', 'oauth_token=', 'oauth_callback=']
         .some(param => details.url.includes(param));
-      
-      if (isTrusted || isOAuthProvider || hasOAuthParams) {
+
+      // Allow:
+      // - Any 100xdevs domain (projects/app/root)
+      // - OAuth providers (Google, GitHub, etc.)
+      // - Any URL carrying OAuth parameters
+      if (isTrusted || isOAuthProvider || is100xDomain || hasOAuthParams) {
         callback({});
         return;
       }
-      
-      if (!isTrusted && details.resourceType === 'mainFrame') {
-        if (details.url.includes('100xdevs.com') || details.url.includes('projects.100xdevs.com')) {
-          callback({});
-          return;
-        }
+
+      // For other domains: open top-level navigations in external browser,
+      // but allow subresources (scripts, images, etc.) to load.
+      if (details.resourceType === 'mainFrame') {
         shell.openExternal(details.url);
         callback({ cancel: true });
-      } else {
-        callback({});
+        return;
       }
+
+      callback({});
     } catch {
       callback({});
     }

@@ -8,13 +8,19 @@
 </head>
 <body>
   <div class="app-container">
+    <div class="top-hover-region"></div>
+    <div class="top-bar">
+      <button id="tab-projects" class="tab-button active">Projects</button>
+      <button id="tab-app" class="tab-button">App</button>
+    </div>
+
     <!-- Webview container - full screen -->
     <webview
       id="main-webview"
       src="https://projects.100xdevs.com/"
       partition="persist:100xdevs"
       allowpopups
-      style="width: 100%; height: 100%; border: none;"
+      class="main-webview"
     ></webview>
   </div>
 

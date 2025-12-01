@@ -7,6 +7,7 @@ let webview: Electron.WebviewTag | null = null;
 
 interface ElectronAPI {
   openExternal: (url: string) => Promise<void>;
+  onNavigateTab?: (callback: (tab: 'projects' | 'app') => void) => void;
 }
 
 declare global {
@@ -21,10 +22,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initializeWebview(): void {
   webview = document.getElementById('main-webview') as Electron.WebviewTag;
+  const projectsBtn = document.getElementById('tab-projects') as HTMLButtonElement | null;
+  const appBtn = document.getElementById('tab-app') as HTMLButtonElement | null;
   
   if (!webview) {
     console.error('Webview not found!');
     return;
+  }
+
+  const setActiveTab = (tab: 'projects' | 'app') => {
+    if (!webview) return;
+
+    if (projectsBtn && appBtn) {
+      projectsBtn.classList.toggle('active', tab === 'projects');
+      appBtn.classList.toggle('active', tab === 'app');
+    }
+
+    if (tab === 'projects') {
+      webview.src = 'https://projects.100xdevs.com/';
+    } else {
+      webview.src = 'https://app.100xdevs.com/home';
+    }
+  };
+
+  if (projectsBtn) {
+    projectsBtn.addEventListener('click', () => setActiveTab('projects'));
+  }
+
+  if (appBtn) {
+    appBtn.addEventListener('click', () => setActiveTab('app'));
   }
 
   webview.addEventListener('did-start-loading', () => {
@@ -73,6 +99,13 @@ function initializeWebview(): void {
   webview.addEventListener('did-navigate-in-page', (event: Electron.DidNavigateInPageEvent) => {
     console.log('In-page navigation to:', event.url);
   });
+
+  // React to tray menu / external navigation requests
+  if (window.electronAPI?.onNavigateTab) {
+    window.electronAPI.onNavigateTab((tab) => {
+      setActiveTab(tab);
+    });
+  }
 }
 
 export {};

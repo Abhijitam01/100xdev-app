@@ -47,6 +47,7 @@
     "files": [
       "dist/**/*",
       "assets/**/*",
+      "src/index.html",
       "package.json"
     ],
     "linux": {
