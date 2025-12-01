@@ -47,8 +47,8 @@ function createWindow(): void {
     icon: path.join(__dirname, 'assets', 'icon-100xdev.png'),
     show: false,
     autoHideMenuBar: true,
-    frame: true,
-    titleBarStyle: 'default'
+    frame: false,
+    titleBarStyle: 'hidden'
   });
 
   const indexHtmlPath = path.join(__dirname, '..', 'src', 'index.html');
@@ -267,6 +267,26 @@ ipcMain.handle('toggle-fullscreen', () => {
 
 ipcMain.handle('is-fullscreen', () => {
   return mainWindow ? mainWindow.isFullScreen() : false;
+});
+
+ipcMain.handle('window-control', (_event, action: 'minimize' | 'maximize' | 'close') => {
+  if (!mainWindow) return;
+
+  switch (action) {
+    case 'minimize':
+      mainWindow.minimize();
+      break;
+    case 'maximize':
+      if (mainWindow.isMaximized()) {
+        mainWindow.unmaximize();
+      } else {
+        mainWindow.maximize();
+      }
+      break;
+    case 'close':
+      mainWindow.close();
+      break;
+  }
 });
 
 function handleProtocolUrl(url: string): void {

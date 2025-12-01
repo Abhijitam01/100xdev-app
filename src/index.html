@@ -10,8 +10,21 @@
   <div class="app-container">
     <div class="top-hover-region"></div>
     <div class="top-bar">
-      <button id="tab-projects" class="tab-button active">Projects</button>
-      <button id="tab-app" class="tab-button">App</button>
+      <div class="tab-group">
+        <button id="tab-projects" class="tab-button active">Projects</button>
+        <button id="tab-app" class="tab-button">App</button>
+      </div>
+      <div class="window-controls">
+        <button id="win-minimize" class="window-control-button" aria-label="Minimize">
+          <span></span>
+        </button>
+        <button id="win-maximize" class="window-control-button" aria-label="Maximize">
+          <span></span>
+        </button>
+        <button id="win-close" class="window-control-button close" aria-label="Close">
+          <span></span>
+        </button>
+      </div>
     </div>
 
     <!-- Webview container - full screen -->

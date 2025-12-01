@@ -1,13 +1,11 @@
 :root {
-  /* Light theme colors */
-  --bg-primary: #ffffff;
-  --text-primary: #1a1a1a;
+  --bg-primary: #05060a;
+  --text-primary: #f9fafb;
 }
 
-[data-theme="dark"] {
-  /* Dark theme colors */
-  --bg-primary: #1a1a1a;
-  --text-primary: #ffffff;
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --text-primary: #1a1a1a;
 }
 
 * {
@@ -34,14 +32,40 @@ html, body {
   position: relative;
 }
 
+.top-hover-region {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  z-index: 20;
+  pointer-events: auto;
+}
+
 .top-bar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   padding: 8px 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  background-color: rgba(0, 0, 0, 0.02);
-  z-index: 10;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(to bottom, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.85));
+  backdrop-filter: blur(12px);
+  z-index: 30;
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: transform 0.18s ease-out, opacity 0.18s ease-out;
+  -webkit-app-region: drag;
+}
+
+.top-hover-region:hover + .top-bar,
+.top-bar:hover {
+  transform: translateY(0);
+  opacity: 1;
 }
 
 .tab-button {
@@ -52,12 +76,66 @@ html, body {
   color: inherit;
   font-size: 14px;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .tab-button.active {
-  background-color: rgba(0, 0, 0, 0.06);
-  border-color: rgba(0, 0, 0, 0.12);
+  background-color: rgba(148, 163, 184, 0.32);
+  border-color: rgba(148, 163, 184, 0.6);
+}
+
+.tab-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.window-control-button {
+  width: 26px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.window-control-button span {
+  display: block;
+  width: 12px;
+  height: 2px;
+  border-radius: 999px;
+  background-color: rgba(148, 163, 184, 0.9);
+}
+
+.window-control-button:nth-child(2) span {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  border: 1px solid rgba(148, 163, 184, 0.9);
+  background: transparent;
+}
+
+.window-control-button.close span {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #ef4444;
+}
+
+.window-control-button:hover {
+  background-color: rgba(15, 23, 42, 0.7);
+  border-color: rgba(148, 163, 184, 0.5);
 }
 
 .main-webview {

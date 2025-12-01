@@ -8,6 +8,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('navigate-tab', (_event, tab: 'projects' | 'app') => {
       callback(tab);
     });
+  },
+  windowControl: (action: 'minimize' | 'maximize' | 'close') => {
+    return ipcRenderer.invoke('window-control', action);
   }
 });
 

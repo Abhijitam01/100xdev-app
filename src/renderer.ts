@@ -8,6 +8,7 @@ let webview: Electron.WebviewTag | null = null;
 interface ElectronAPI {
   openExternal: (url: string) => Promise<void>;
   onNavigateTab?: (callback: (tab: 'projects' | 'app') => void) => void;
+  windowControl?: (action: 'minimize' | 'maximize' | 'close') => void;
 }
 
 declare global {

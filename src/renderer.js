@@ -10,6 +10,9 @@ function initializeWebview() {
   webview = document.getElementById('main-webview');
   const projectsBtn = document.getElementById('tab-projects');
   const appBtn = document.getElementById('tab-app');
+   const btnMinimize = document.getElementById('win-minimize');
+   const btnMaximize = document.getElementById('win-maximize');
+   const btnClose = document.getElementById('win-close');
 
   if (!webview) {
     console.error('Webview not found!');
@@ -37,6 +40,19 @@ function initializeWebview() {
 
   if (appBtn) {
     appBtn.addEventListener('click', () => setActiveTab('app'));
+  }
+
+  // Window controls
+  if (btnMinimize && window.electronAPI && typeof window.electronAPI.windowControl === 'function') {
+    btnMinimize.addEventListener('click', () => window.electronAPI.windowControl('minimize'));
+  }
+
+  if (btnMaximize && window.electronAPI && typeof window.electronAPI.windowControl === 'function') {
+    btnMaximize.addEventListener('click', () => window.electronAPI.windowControl('maximize'));
+  }
+
+  if (btnClose && window.electronAPI && typeof window.electronAPI.windowControl === 'function') {
+    btnClose.addEventListener('click', () => window.electronAPI.windowControl('close'));
   }
 
   // Webview event handlers
