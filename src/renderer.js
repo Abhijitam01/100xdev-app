@@ -34,7 +34,7 @@ function initializeWebview() {
     } else if (tab === 'app') {
       webview.src = 'https://app.100xdevs.com/home';
     } else {
-      webview.src = 'https://harkirat.classx.co.in/';
+      webview.src = 'https://harkirat.classx.co.in/new-courses/14/content?activeTab=Content';
     }
   };
 
@@ -95,6 +95,7 @@ function initializeWebview() {
     
     // Check if it's an OAuth URL or trusted domain
     if (url.includes('100xdevs.com') || 
+        url.includes('classx.co.in') ||
         url.includes('oauth') || 
         url.includes('auth') ||
         url.includes('accounts.google.com') ||

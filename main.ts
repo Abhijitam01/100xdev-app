@@ -12,7 +12,8 @@ const APP_VERSION = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8')).versio
 const TRUSTED_ORIGINS = [
   'https://projects.100xdevs.com',
   'https://app.100xdevs.com',
-  'https://100xdevs.com'
+  'https://100xdevs.com',
+  'https://harkirat.classx.co.in'
 ];
 
 const OAUTH_PROVIDERS = [
@@ -144,6 +145,7 @@ function setupNavigationHandlers(): void {
 
       const is100xDomain =
         url.hostname.endsWith('100xdevs.com') ||
+        url.hostname.endsWith('classx.co.in') ||
         url.hostname === 'localhost';
 
       const hasOAuthParams = ['code=', 'access_token=', 'id_token=', 'state=', 'oauth_token=', 'oauth_callback=']
