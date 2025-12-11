@@ -10,9 +10,10 @@ function initializeWebview() {
   webview = document.getElementById('main-webview');
   const projectsBtn = document.getElementById('tab-projects');
   const appBtn = document.getElementById('tab-app');
-   const btnMinimize = document.getElementById('win-minimize');
-   const btnMaximize = document.getElementById('win-maximize');
-   const btnClose = document.getElementById('win-close');
+  const classxBtn = document.getElementById('tab-classx');
+  const btnMinimize = document.getElementById('win-minimize');
+  const btnMaximize = document.getElementById('win-maximize');
+  const btnClose = document.getElementById('win-close');
 
   if (!webview) {
     console.error('Webview not found!');
@@ -22,15 +23,18 @@ function initializeWebview() {
   const setActiveTab = (tab) => {
     if (!webview) return;
 
-    if (projectsBtn && appBtn) {
+    if (projectsBtn && appBtn && classxBtn) {
       projectsBtn.classList.toggle('active', tab === 'projects');
       appBtn.classList.toggle('active', tab === 'app');
+      classxBtn.classList.toggle('active', tab === 'classx');
     }
 
     if (tab === 'projects') {
       webview.src = 'https://projects.100xdevs.com/';
-    } else {
+    } else if (tab === 'app') {
       webview.src = 'https://app.100xdevs.com/home';
+    } else {
+      webview.src = 'https://harkirat.classx.co.in/';
     }
   };
 
@@ -40,6 +44,10 @@ function initializeWebview() {
 
   if (appBtn) {
     appBtn.addEventListener('click', () => setActiveTab('app'));
+  }
+
+  if (classxBtn) {
+    classxBtn.addEventListener('click', () => setActiveTab('classx'));
   }
 
   // Window controls

@@ -4,10 +4,11 @@ type WebviewNewWindowEvent = Electron.Event & {
 };
 
 let webview: Electron.WebviewTag | null = null;
+type TabKey = 'projects' | 'app' | 'classx';
 
 interface ElectronAPI {
   openExternal: (url: string) => Promise<void>;
-  onNavigateTab?: (callback: (tab: 'projects' | 'app') => void) => void;
+  onNavigateTab?: (callback: (tab: TabKey) => void) => void;
   windowControl?: (action: 'minimize' | 'maximize' | 'close') => void;
 }
 
@@ -25,24 +26,28 @@ function initializeWebview(): void {
   webview = document.getElementById('main-webview') as Electron.WebviewTag;
   const projectsBtn = document.getElementById('tab-projects') as HTMLButtonElement | null;
   const appBtn = document.getElementById('tab-app') as HTMLButtonElement | null;
+  const classxBtn = document.getElementById('tab-classx') as HTMLButtonElement | null;
   
   if (!webview) {
     console.error('Webview not found!');
     return;
   }
 
-  const setActiveTab = (tab: 'projects' | 'app') => {
+  const setActiveTab = (tab: TabKey) => {
     if (!webview) return;
 
-    if (projectsBtn && appBtn) {
+    if (projectsBtn && appBtn && classxBtn) {
       projectsBtn.classList.toggle('active', tab === 'projects');
       appBtn.classList.toggle('active', tab === 'app');
+      classxBtn.classList.toggle('active', tab === 'classx');
     }
 
     if (tab === 'projects') {
       webview.src = 'https://projects.100xdevs.com/';
-    } else {
+    } else if (tab === 'app') {
       webview.src = 'https://app.100xdevs.com/home';
+    } else {
+      webview.src = 'https://harkirat.classx.co.in/';
     }
   };
 
@@ -52,6 +57,10 @@ function initializeWebview(): void {
 
   if (appBtn) {
     appBtn.addEventListener('click', () => setActiveTab('app'));
+  }
+
+  if (classxBtn) {
+    classxBtn.addEventListener('click', () => setActiveTab('classx'));
   }
 
   webview.addEventListener('did-start-loading', () => {
