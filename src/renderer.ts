@@ -144,6 +144,69 @@ function initializeWebview(): void {
     document.body.classList.remove('loading');
   });
 
+  // Inject link override script when DOM is ready (runs earlier than did-finish-load)
+  webview.addEventListener('dom-ready', () => {
+    if (currentTab === 'projects' && webview) {
+      console.log('[Navigation Debug] DOM ready, injecting link override script');
+      try {
+        webview.executeJavaScript(`
+          (function() {
+            console.log('[Injected Script] Setting up link override for projects tab');
+            
+            // Function to override links
+            function overrideLinks() {
+              // Override all existing links with target="_blank"
+              document.querySelectorAll('a[target="_blank"]').forEach(function(link) {
+                link.removeAttribute('target');
+                link.addEventListener('click', function(e) {
+                  console.log('[Injected Script] Link clicked:', this.href);
+                  if (this.href && this.href.includes('projects.100xdevs.com')) {
+                    e.preventDefault();
+                    window.location.href = this.href;
+                  }
+                });
+              });
+            }
+            
+            // Run immediately
+            overrideLinks();
+            
+            // Run again after a short delay to catch dynamically loaded content
+            setTimeout(overrideLinks, 1000);
+            
+            // Also handle window.open calls
+            const originalOpen = window.open;
+            window.open = function(url, target, features) {
+              console.log('[Injected Script] window.open called:', url);
+              if (url && (url.includes('projects.100xdevs.com') || url.startsWith('/'))) {
+                if (url.startsWith('/')) {
+                  url = window.location.origin + url;
+                }
+                window.location.href = url;
+                return null;
+              }
+              return originalOpen.apply(window, arguments);
+            };
+            
+            // Use MutationObserver to catch dynamically added links
+            const observer = new MutationObserver(function(mutations) {
+              overrideLinks();
+            });
+            
+            observer.observe(document.body, {
+              childList: true,
+              subtree: true
+            });
+          })();
+        `).catch((err: Error) => {
+          console.warn('[Navigation Debug] Could not inject script on dom-ready:', err.message);
+        });
+      } catch (err: any) {
+        console.warn('[Navigation Debug] Script injection on dom-ready failed:', err.message);
+      }
+    }
+  });
+
   webview.addEventListener('did-finish-load', () => {
     const url = webview?.getURL();
     console.log('[Fullscreen Debug] Page loaded:', url);
@@ -155,6 +218,44 @@ function initializeWebview(): void {
       console.log('[Fullscreen Debug] ClassX page loaded, entering fullscreen');
       toggleFullscreenMode();
     }
+
+    // Inject script to handle links that might open in new windows
+    // This ensures all links in projects tab open in the same webview
+    if (currentTab === 'projects' && webview) {
+      try {
+        webview.executeJavaScript(`
+          (function() {
+            console.log('[Injected Script] Overriding link behavior for projects tab');
+            // Override all links with target="_blank" to open in same window
+            document.addEventListener('click', function(e) {
+              const link = e.target.closest('a');
+              if (link && link.target === '_blank') {
+                console.log('[Injected Script] Intercepting link with target="_blank":', link.href);
+                e.preventDefault();
+                e.stopPropagation();
+                window.location.href = link.href;
+                return false;
+              }
+            }, true);
+            
+            // Also handle window.open calls
+            const originalOpen = window.open;
+            window.open = function(url, target, features) {
+              console.log('[Injected Script] Intercepting window.open:', url);
+              if (url && url.includes('projects.100xdevs.com')) {
+                window.location.href = url;
+                return null;
+              }
+              return originalOpen.apply(window, arguments);
+            };
+          })();
+        `).catch((err: Error) => {
+          console.warn('[Navigation Debug] Could not inject script:', err.message);
+        });
+      } catch (err: any) {
+        console.warn('[Navigation Debug] Script injection failed:', err.message);
+      }
+    }
   });
 
   webview.addEventListener('did-fail-load', (event: Electron.DidFailLoadEvent) => {
@@ -163,7 +264,21 @@ function initializeWebview(): void {
   });
 
   webview.addEventListener('will-navigate', (event: Electron.WillNavigateEvent) => {
-    console.log('Navigating to:', event.url);
+    const url = event.url;
+    console.log('[Navigation Debug] Will navigate to:', url);
+    console.log('[Navigation Debug] Current tab:', currentTab);
+    
+    // Allow navigation within the same domain
+    // This ensures links clicked in projects tab navigate in-place
+    if (currentTab === 'projects' && url.includes('projects.100xdevs.com')) {
+      console.log('[Navigation Debug] Allowing navigation within projects domain');
+      // Navigation is allowed by default, just log it
+    } else if (currentTab === 'app' && url.includes('app.100xdevs.com')) {
+      console.log('[Navigation Debug] Allowing navigation within app domain');
+    } else if (currentTab === 'classx' && url.includes('classx.co.in')) {
+      console.log('[Navigation Debug] Allowing navigation within classx domain');
+    }
+    // Navigation will proceed normally
   });
 
   webview.addEventListener('new-window', (event: Event) => {
@@ -171,26 +286,49 @@ function initializeWebview(): void {
     const newWindowEvent = event as unknown as WebviewNewWindowEvent;
     const url = newWindowEvent.url;
     
+    console.log('[Navigation Debug] New window requested:', url);
+    console.log('[Navigation Debug] Current tab:', currentTab);
+    
+    // For projects tab, open all links in the same webview
+    if (currentTab === 'projects') {
+      console.log('[Navigation Debug] Projects tab - opening in same webview');
+      if (webview) {
+        webview.src = url;
+      }
+      return;
+    }
+    
+    // For other tabs, check domain matching
     if (url.includes('100xdevs.com') || 
         url.includes('classx.co.in') ||
         url.includes('oauth') || 
         url.includes('auth') ||
         url.includes('accounts.google.com') ||
         url.includes('github.com')) {
+      console.log('[Navigation Debug] Trusted domain - opening in same webview');
       if (webview) {
         webview.src = url;
       }
-    } else if (window.electronAPI) {
-      window.electronAPI.openExternal(url);
+    } else {
+      console.log('[Navigation Debug] External domain - opening in external browser');
+      if (window.electronAPI) {
+        window.electronAPI.openExternal(url);
+      }
     }
   });
 
   webview.addEventListener('did-navigate', (event: Electron.DidNavigateEvent) => {
-    console.log('Navigated to:', event.url);
+    console.log('[Navigation Debug] Navigated to:', event.url);
+    console.log('[Navigation Debug] Current tab:', currentTab);
   });
 
   webview.addEventListener('did-navigate-in-page', (event: Electron.DidNavigateInPageEvent) => {
-    console.log('In-page navigation to:', event.url);
+    console.log('[Navigation Debug] In-page navigation to:', event.url);
+  });
+
+  // Handle guest webview creation (another way links might open)
+  webview.addEventListener('did-attach', () => {
+    console.log('[Navigation Debug] Webview attached');
   });
 
   // React to tray menu / external navigation requests
