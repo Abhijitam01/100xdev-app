@@ -4,13 +4,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openExternal: (url: string) => {
     return ipcRenderer.invoke('open-external', url);
   },
-  onNavigateTab: (callback: (tab: 'projects' | 'app') => void) => {
-    ipcRenderer.on('navigate-tab', (_event, tab: 'projects' | 'app') => {
+  onNavigateTab: (callback: (tab: 'projects' | 'app' | 'classx') => void) => {
+    ipcRenderer.on('navigate-tab', (_event, tab: 'projects' | 'app' | 'classx') => {
       callback(tab);
     });
   },
   windowControl: (action: 'minimize' | 'maximize' | 'close') => {
     return ipcRenderer.invoke('window-control', action);
+  },
+  toggleFullscreen: () => {
+    return ipcRenderer.invoke('toggle-fullscreen');
+  },
+  isFullscreen: () => {
+    return ipcRenderer.invoke('is-fullscreen');
   }
 });
 

@@ -146,6 +146,38 @@ html, body {
   outline: none;
 }
 
+/* Fullscreen mode - hide top bar by default but allow hover to show it */
+body.fullscreen-mode .top-hover-region {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+body.fullscreen-mode .top-bar {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Allow showing top bar on hover even in fullscreen (for emergency exit) */
+body.fullscreen-mode .top-hover-region:hover + .top-bar,
+body.fullscreen-mode .top-bar:hover {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+body.fullscreen-mode .main-webview {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+}
+
 /* Loading indicator */
 body.loading::before {
   content: '';
