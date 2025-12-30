@@ -13,7 +13,8 @@ const TRUSTED_ORIGINS = [
   'https://projects.100xdevs.com',
   'https://app.100xdevs.com',
   'https://100xdevs.com',
-  'https://harkirat.classx.co.in'
+  'https://harkirat.classx.co.in',
+  'https://appx-play.classx.co.in'
 ];
 
 const OAUTH_PROVIDERS = [
@@ -75,6 +76,19 @@ function createWindow(): void {
         mainWindow.setFullScreen(false);
       }
     });
+
+    // Open DevTools with Ctrl+Shift+I or F12
+    globalShortcut.register('CommandOrControl+Shift+I', () => {
+      if (mainWindow) {
+        mainWindow.webContents.toggleDevTools();
+      }
+    });
+
+    globalShortcut.register('F12', () => {
+      if (mainWindow) {
+        mainWindow.webContents.toggleDevTools();
+      }
+    });
   });
 
   mainWindow.on('closed', () => {
@@ -100,12 +114,34 @@ function setupSecurityHandlers(): void {
         origin === provider || origin.startsWith(provider + '/')
       );
       
-      if (isTrusted || isOAuthProvider) {
+      // Also check if it's a classx.co.in or 100xdevs.com subdomain
+      const isClassxDomain = url.hostname.endsWith('.classx.co.in') || url.hostname === 'classx.co.in';
+      const is100xdevsDomain = url.hostname.endsWith('.100xdevs.com') || url.hostname === '100xdevs.com';
+      
+      console.log(`[Permission Request] ${permission} from ${origin} (trusted: ${isTrusted}, oauth: ${isOAuthProvider}, classx: ${isClassxDomain}, 100xdevs: ${is100xdevsDomain})`);
+      
+      // Explicitly allow fullscreen permission for trusted origins and related domains
+      if (permission === 'fullscreen') {
+        if (isTrusted || isOAuthProvider || isClassxDomain || is100xdevsDomain) {
+          console.log(`[Permission Request] Allowing fullscreen for ${origin}`);
+          callback(true);
+          return;
+        } else {
+          console.log(`[Permission Request] Denying fullscreen for ${origin} (not trusted)`);
+          callback(false);
+          return;
+        }
+      }
+      
+      if (isTrusted || isOAuthProvider || isClassxDomain || is100xdevsDomain) {
+        console.log(`[Permission Request] Allowing ${permission} for ${origin}`);
         callback(true);
       } else {
+        console.log(`[Permission Request] Denying ${permission} for ${origin}`);
         callback(false);
       }
-    } catch {
+    } catch (err) {
+      console.error(`[Permission Request] Error handling permission request:`, err);
       callback(false);
     }
   });
@@ -120,7 +156,16 @@ function setupSecurityHandlers(): void {
         origin === provider || origin.startsWith(provider + '/')
       );
       
-      return isTrusted || isOAuthProvider;
+      // Also check if it's a classx.co.in or 100xdevs.com subdomain
+      const isClassxDomain = url.hostname.endsWith('.classx.co.in') || url.hostname === 'classx.co.in';
+      const is100xdevsDomain = url.hostname.endsWith('.100xdevs.com') || url.hostname === '100xdevs.com';
+      
+      // Explicitly allow fullscreen permission check for trusted origins and related domains
+      if (permission === 'fullscreen' && (isTrusted || isOAuthProvider || isClassxDomain || is100xdevsDomain)) {
+        return true;
+      }
+      
+      return isTrusted || isOAuthProvider || isClassxDomain || is100xdevsDomain;
     } catch {
       return false;
     }
@@ -144,8 +189,10 @@ function setupNavigationHandlers(): void {
       );
 
       const is100xDomain =
-        url.hostname.endsWith('100xdevs.com') ||
-        url.hostname.endsWith('classx.co.in') ||
+        url.hostname.endsWith('.100xdevs.com') ||
+        url.hostname === '100xdevs.com' ||
+        url.hostname.endsWith('.classx.co.in') ||
+        url.hostname === 'classx.co.in' ||
         url.hostname === 'localhost';
 
       const hasOAuthParams = ['code=', 'access_token=', 'id_token=', 'state=', 'oauth_token=', 'oauth_callback=']
@@ -269,6 +316,22 @@ ipcMain.handle('toggle-fullscreen', () => {
 
 ipcMain.handle('is-fullscreen', () => {
   return mainWindow ? mainWindow.isFullScreen() : false;
+});
+
+ipcMain.handle('enter-fullscreen', () => {
+  if (mainWindow) {
+    mainWindow.setFullScreen(true);
+    return true;
+  }
+  return false;
+});
+
+ipcMain.handle('exit-fullscreen', () => {
+  if (mainWindow) {
+    mainWindow.setFullScreen(false);
+    return true;
+  }
+  return false;
 });
 
 ipcMain.handle('window-control', (_event, action: 'minimize' | 'maximize' | 'close') => {
