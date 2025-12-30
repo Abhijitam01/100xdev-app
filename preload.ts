@@ -17,6 +17,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   isFullscreen: () => {
     return ipcRenderer.invoke('is-fullscreen');
+  },
+  enterFullscreen: () => {
+    return ipcRenderer.invoke('enter-fullscreen');
+  },
+  exitFullscreen: () => {
+    return ipcRenderer.invoke('exit-fullscreen');
   }
 });
 
