@@ -14,6 +14,8 @@ interface ElectronAPI {
   windowControl?: (action: 'minimize' | 'maximize' | 'close') => void;
   toggleFullscreen?: () => Promise<boolean>;
   isFullscreen?: () => Promise<boolean>;
+  enterFullscreen?: () => Promise<boolean>;
+  exitFullscreen?: () => Promise<boolean>;
 }
 
 declare global {
@@ -136,6 +138,33 @@ function initializeWebview(): void {
     classxBtn.addEventListener('click', () => setActiveTab('classx'));
   }
 
+  // Handle fullscreen requests from webview content - set up early
+  webview.addEventListener('enter-html-full-screen', () => {
+    console.log('[Fullscreen Debug] enter-html-full-screen event fired');
+    if (window.electronAPI?.enterFullscreen) {
+      window.electronAPI.enterFullscreen().then(() => {
+        console.log('[Fullscreen Debug] Electron window entered fullscreen successfully');
+      }).catch((err: Error) => {
+        console.error('[Fullscreen Debug] Error entering fullscreen:', err);
+      });
+    } else {
+      console.warn('[Fullscreen Debug] enterFullscreen API not available');
+    }
+  });
+
+  webview.addEventListener('leave-html-full-screen', () => {
+    console.log('[Fullscreen Debug] leave-html-full-screen event fired');
+    if (window.electronAPI?.exitFullscreen) {
+      window.electronAPI.exitFullscreen().then(() => {
+        console.log('[Fullscreen Debug] Electron window exited fullscreen successfully');
+      }).catch((err: Error) => {
+        console.error('[Fullscreen Debug] Error exiting fullscreen:', err);
+      });
+    } else {
+      console.warn('[Fullscreen Debug] exitFullscreen API not available');
+    }
+  });
+
   webview.addEventListener('did-start-loading', () => {
     document.body.classList.add('loading');
   });
@@ -147,64 +176,64 @@ function initializeWebview(): void {
   // Inject link override script when DOM is ready (runs earlier than did-finish-load)
   webview.addEventListener('dom-ready', () => {
     if (currentTab === 'projects' && webview) {
-      console.log('[Navigation Debug] DOM ready, injecting link override script');
-      try {
-        webview.executeJavaScript(`
-          (function() {
-            console.log('[Injected Script] Setting up link override for projects tab');
-            
-            // Function to override links
-            function overrideLinks() {
-              // Override all existing links with target="_blank"
-              document.querySelectorAll('a[target="_blank"]').forEach(function(link) {
-                link.removeAttribute('target');
-                link.addEventListener('click', function(e) {
-                  console.log('[Injected Script] Link clicked:', this.href);
-                  if (this.href && this.href.includes('projects.100xdevs.com')) {
-                    e.preventDefault();
-                    window.location.href = this.href;
-                  }
+        console.log('[Navigation Debug] DOM ready, injecting link override script');
+        try {
+          webview.executeJavaScript(`
+            (function() {
+              console.log('[Injected Script] Setting up link override for projects tab');
+              
+              // Function to override links
+              function overrideLinks() {
+                // Override all existing links with target="_blank"
+                document.querySelectorAll('a[target="_blank"]').forEach(function(link) {
+                  link.removeAttribute('target');
+                  link.addEventListener('click', function(e) {
+                    console.log('[Injected Script] Link clicked:', this.href);
+                    if (this.href && this.href.includes('projects.100xdevs.com')) {
+                      e.preventDefault();
+                      window.location.href = this.href;
+                    }
+                  });
                 });
-              });
-            }
-            
-            // Run immediately
-            overrideLinks();
-            
-            // Run again after a short delay to catch dynamically loaded content
-            setTimeout(overrideLinks, 1000);
-            
-            // Also handle window.open calls
-            const originalOpen = window.open;
-            window.open = function(url, target, features) {
-              console.log('[Injected Script] window.open called:', url);
-              if (url && (url.includes('projects.100xdevs.com') || url.startsWith('/'))) {
-                if (url.startsWith('/')) {
-                  url = window.location.origin + url;
-                }
-                window.location.href = url;
-                return null;
               }
-              return originalOpen.apply(window, arguments);
-            };
-            
-            // Use MutationObserver to catch dynamically added links
-            const observer = new MutationObserver(function(mutations) {
+              
+              // Run immediately
               overrideLinks();
-            });
-            
-            observer.observe(document.body, {
-              childList: true,
-              subtree: true
-            });
-          })();
-        `).catch((err: Error) => {
-          console.warn('[Navigation Debug] Could not inject script on dom-ready:', err.message);
-        });
-      } catch (err: any) {
-        console.warn('[Navigation Debug] Script injection on dom-ready failed:', err.message);
+              
+              // Run again after a short delay to catch dynamically loaded content
+              setTimeout(overrideLinks, 1000);
+              
+              // Also handle window.open calls
+              const originalOpen = window.open;
+              window.open = function(url, target, features) {
+                console.log('[Injected Script] window.open called:', url);
+                if (url && (url.includes('projects.100xdevs.com') || url.startsWith('/'))) {
+                  if (url.startsWith('/')) {
+                    url = window.location.origin + url;
+                  }
+                  window.location.href = url;
+                  return null;
+                }
+                return originalOpen.apply(window, arguments);
+              };
+              
+              // Use MutationObserver to catch dynamically added links
+              const observer = new MutationObserver(function(mutations) {
+                overrideLinks();
+              });
+              
+              observer.observe(document.body, {
+                childList: true,
+                subtree: true
+              });
+            })();
+          `).catch((err: Error) => {
+            console.warn('[Navigation Debug] Could not inject script on dom-ready:', err.message);
+          });
+        } catch (err: any) {
+          console.warn('[Navigation Debug] Script injection on dom-ready failed:', err.message);
+        }
       }
-    }
   });
 
   webview.addEventListener('did-finish-load', () => {
@@ -217,6 +246,95 @@ function initializeWebview(): void {
     if (url?.includes('classx.co.in') && currentTab === 'classx' && !isFullscreenMode) {
       console.log('[Fullscreen Debug] ClassX page loaded, entering fullscreen');
       toggleFullscreenMode();
+    }
+
+    // Inject fullscreen API interception script for all tabs
+    if (webview) {
+      try {
+        webview.executeJavaScript(`
+          (function() {
+            console.log('[Injected Script] Setting up fullscreen API interception');
+            
+            // Store original methods
+            const originalRequestFullscreen = Element.prototype.requestFullscreen || 
+                                              Element.prototype.webkitRequestFullscreen || 
+                                              Element.prototype.mozRequestFullScreen || 
+                                              Element.prototype.msRequestFullscreen;
+            
+            const originalExitFullscreen = document.exitFullscreen || 
+                                          document.webkitExitFullscreen || 
+                                          document.mozCancelFullScreen || 
+                                          document.msExitFullscreen;
+            
+            // Override requestFullscreen to ensure it works
+            if (originalRequestFullscreen) {
+              Element.prototype.requestFullscreen = function() {
+                console.log('[Injected Script] requestFullscreen called on element:', this);
+                // Call original - this should trigger the webview event
+                const result = originalRequestFullscreen.apply(this, arguments);
+                console.log('[Injected Script] requestFullscreen result:', result);
+                return result;
+              };
+              
+              // Also override vendor-specific methods
+              if (Element.prototype.webkitRequestFullscreen) {
+                Element.prototype.webkitRequestFullscreen = Element.prototype.requestFullscreen;
+              }
+              if (Element.prototype.mozRequestFullScreen) {
+                Element.prototype.mozRequestFullScreen = Element.prototype.requestFullscreen;
+              }
+              if (Element.prototype.msRequestFullscreen) {
+                Element.prototype.msRequestFullscreen = Element.prototype.requestFullscreen;
+              }
+            }
+            
+            // Override exitFullscreen
+            if (originalExitFullscreen) {
+              document.exitFullscreen = function() {
+                console.log('[Injected Script] exitFullscreen called');
+                return originalExitFullscreen.apply(this, arguments);
+              };
+              
+              if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen = document.exitFullscreen;
+              }
+              if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen = document.exitFullscreen;
+              }
+              if (document.msExitFullscreen) {
+                document.msExitFullscreen = document.exitFullscreen;
+              }
+            }
+            
+            // Log fullscreen changes for debugging
+            const handleFullscreenChange = function() {
+              const isFullscreen = !!(document.fullscreenElement || 
+                                     document.webkitFullscreenElement || 
+                                     document.mozFullScreenElement || 
+                                     document.msFullscreenElement);
+              console.log('[Injected Script] Fullscreen changed:', isFullscreen);
+            };
+            
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+            
+            // Also try to enable fullscreen if it's not enabled
+            if (!document.fullscreenEnabled && !document.webkitFullscreenEnabled) {
+              console.warn('[Injected Script] Fullscreen API appears to be disabled');
+            } else {
+              console.log('[Injected Script] Fullscreen API is enabled');
+            }
+            
+            console.log('[Injected Script] Fullscreen API interception setup complete');
+          })();
+        `).catch((err: Error) => {
+          console.warn('[Fullscreen Debug] Could not inject fullscreen interception script:', err.message);
+        });
+      } catch (err: any) {
+        console.warn('[Fullscreen Debug] Fullscreen interception script injection failed:', err.message);
+      }
     }
 
     // Inject script to handle links that might open in new windows
@@ -301,6 +419,7 @@ function initializeWebview(): void {
     // For other tabs, check domain matching
     if (url.includes('100xdevs.com') || 
         url.includes('classx.co.in') ||
+        url.includes('appx-play.classx.co.in') ||
         url.includes('oauth') || 
         url.includes('auth') ||
         url.includes('accounts.google.com') ||
@@ -349,6 +468,17 @@ function initializeWebview(): void {
       event.preventDefault();
       console.log('[Fullscreen Debug] Escape pressed, exiting fullscreen');
       exitFullscreenMode();
+    } else if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'I') {
+      // Ctrl+Shift+I or Cmd+Shift+I - handled by main process
+    } else if (event.key === 'F12') {
+      // F12 - handled by main process
+    } else if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'J') {
+      // Ctrl+Shift+J or Cmd+Shift+J - Open webview DevTools
+      event.preventDefault();
+      if (webview) {
+        console.log('[Debug] Opening webview DevTools');
+        webview.openDevTools();
+      }
     }
   });
 
